@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	elastic "gopkg.in/olivere/elastic.v5"
@@ -88,28 +87,33 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	exists, err := client.IndexExists("twitter").Do(ctx)
+	exists, err := client.IndexExists("mobilos").Do(ctx)
 	if err != nil {
-		// Handle error
 		panic(err)
 	}
 	if !exists {
-		// Create a new index.
 		createIndex, err := client.CreateIndex("mobilos").BodyString(mapping).Do(ctx)
 		if err != nil {
-			// Handle error
 			panic(err)
 		}
 		if !createIndex.Acknowledged {
-			// Not acknowledged
+			fmt.Println("Not acknowledged", createIndex)
 		}
 	}
 
-	p := client.Index().Index("mobilos")
-	iphone := Mobile{}
-	json.Unmarshal([]byte(
-		`{ "name":"iphone 7", "camera":"12mp", "storage":"256gb", "battery":"included" }`),
-		&iphone)
-
-	fmt.Println("Hej Verden", iphone, p)
+	// p := client.Index().Index("mobilos")
+	iphone := Mobile{"iphone 7", "12mp", "12mp", "included"}
+	// json.Unmarshal([]byte(
+	// 	`{ "name":"iphone 7", "camera":"12mp", "storage":"12mp", "battery":"included" }`),
+	// 	&iphone)
+	put1, err := client.Index().
+		Index("mobilos").
+		Type("phone").
+		Id("1").
+		BodyJson(iphone).
+		Do(ctx)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Hej Verden", put1)
 }
